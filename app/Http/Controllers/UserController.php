@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewUser;
 
 class UserController extends Controller
 {
@@ -36,14 +38,18 @@ class UserController extends Controller
         'job'=>request('job'),
         'password'=>bcrypt(request('password')),
     ];
-    User::create($input);
-    if(request('null')==1){
-        return to_route('user.show')->with('message','user added successfully');
+    $create=User::create($input);
+        if($create){
+            Mail::to(request('emailAddress'))->send(new NewUser);
+        }
+        if(request('null')==1){
+            return to_route('user.show')->with('message','user added successfully');
+        }
+        else{
+            return to_route('home',)->with('messsage','success');
+        }
     }
-    else{
-        return to_route('home',)->with('messsage','success');
-    }
-    }
+
     public function show()
     {
         $users=User::all();
